@@ -39,7 +39,7 @@ def make_json(filePronteDisponibilita, fileGiustificativi, fileDestinazioneOutpu
                     output.append(row)
 
     
-    outputSenzaGiustificativi = [el for el in output if (not any((el["MATRICOLA"] == x["Matricola"] and el["DATA"]==x["Data Inizio"]) for x in giustificativi))]
+    outputSenzaGiustificativi = [el for el in output if (not any((el["MATRICOLA"] == x["Matricola"] and checkIfInDate(el["DATA"],x["Data Inizio"],x["Data Fine"])) for x in giustificativi))]
     
     for row in outputSenzaGiustificativi:
         export.append({"MATRICOLA":row["MATRICOLA"],"CAUSALE":"TPD","DATA_INIZIO (gg/mm/aaaa)":row["DATA"],"DATA_FINE (gg/mm/aaaa)":row["DATA"],"TIPO_INSERIMENTO":"I","ORA_INIZIO (hh:mm)":"","ORA_FINE (hh:mm)":"","DURATA (hh:mm)":"","FAMILIARE":"","NOTA_INFORMATIVA":"TPDAUTO","FORZATURA_INSERIMENTO":"S"})
@@ -56,6 +56,12 @@ def make_json(filePronteDisponibilita, fileGiustificativi, fileDestinazioneOutpu
         writer.writeheader()
         writer.writerows(export)
     print("COMPLETATO!")
+
+def checkIfInDate(dateString,startString,endString):
+    date = datetime.strptime(dateString, "%d/%m/%Y")
+    start = datetime.strptime(startString, "%d/%m/%Y")
+    end = datetime.strptime(endString, "%d/%m/%Y")
+    return start <= date <= end
 
 # Function to handle the button click and call make_json
 def process_files():

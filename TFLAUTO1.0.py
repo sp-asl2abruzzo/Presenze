@@ -29,7 +29,7 @@ def make_json(fileTimbrature, fileGiustificativi, fileDestinazioneOutput, giorni
         
     # print(giustificativi)
     for index,row in enumerate(data):
-        if (row["RUO"] == "ORTONA1" or row["RUO"] == "CHIETI2") and (row["QUALIFICA"]=="Dirigente Medico" or row["QUALIFICA"]=="Biologo Dirigente" or row["QUALIFICA"]=="Psicologo Dirigente" or row["QUALIFICA"]=="Farmacista Dirigente" or row["QUALIFICA"]=="Dirigente Fisico") and (any(row["GIORNO"]==x for x in giorni_festivi)) and (row["CAUSALE"]=="" or row["CAUSALE"]=="09"):
+        if (row["RUO"] == "ORTONA1" or row["RUO"] == "CHIETI2" or row["RUO"] == "GUARDIAGRELE") and (row["QUALIFICA"]=="Dirigente Medico" or row["QUALIFICA"]=="Biologo Dirigente" or row["QUALIFICA"]=="Psicologo Dirigente" or row["QUALIFICA"]=="Farmacista Dirigente" or row["QUALIFICA"]=="Dirigente Fisico") and (any(row["GIORNO"]==x for x in giorni_festivi)) and (row["CAUSALE"]=="" or row["CAUSALE"]=="09"):
             print(index)
             if row["VERSO"]=="U":
                 row["Turno"]="Monto"
@@ -58,7 +58,7 @@ def make_json(fileTimbrature, fileGiustificativi, fileDestinazioneOutput, giorni
                     res.clear()
 
     
-    outputSenzaGiustificativi = [el for el in output if (not any((el["MATRICOLA"] == x["Matricola"] and el["GIORNO"]==x["Data Inizio"]) for x in giustificativi))]
+    outputSenzaGiustificativi = [el for el in output if (not any((el["MATRICOLA"] == x["Matricola"] and checkIfInDate(el["GIORNO"], x["Data Inizio"], x["Data Fine"])) for x in giustificativi))]
     # with open(fileDestinazioneOutput+".json", 'w') as f:
     #     json.dump(o, f)
 
@@ -75,6 +75,12 @@ def make_json(fileTimbrature, fileGiustificativi, fileDestinazioneOutput, giorni
         writer.writeheader()
         writer.writerows(export)
     print("COMPLETATO!")
+
+def checkIfInDate(dateString,startString,endString):
+    date = datetime.strptime(dateString, "%d/%m/%Y")
+    start = datetime.strptime(startString, "%d/%m/%Y")
+    end = datetime.strptime(endString, "%d/%m/%Y")
+    return start <= date <= end
 
 # Function to handle the button click and call make_json
 def process_files():

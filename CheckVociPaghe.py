@@ -12,13 +12,14 @@ def make_json(fileTimbrature, fileDestinazioneOutput):
     # create a dictionary
     data = []
     output = {}
+    output_intervalli = {}
     alphabet = {
     'A-C': ('A', 'B', 'C'),
     'D-D': ('D',),
     'E-L': ('E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'),
     'M-R': ('M', 'N', 'O', 'P', 'Q', 'R'),
     'S-Z': ('S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
-}
+    }
     
     # Open a csv reader called DictReader
     with open(fileTimbrature, encoding='latin-1') as file:  
@@ -30,35 +31,41 @@ def make_json(fileTimbrature, fileDestinazioneOutput):
     for index,row in enumerate(data):
         firstLetter = row["Nominativo"][0].upper()        
         if firstLetter in output:
-            if "totali" in output[firstLetter]:
-                output[firstLetter]["totali"]+=1
+            if "Totali" in output[firstLetter]:
+                output[firstLetter]["Totali"]+=1
             else:
-                output[firstLetter]["totali"]=1
+                output[firstLetter]["Totali"]=1
 
             if row["Voce Variabile"] in output[firstLetter]:
                 output[firstLetter][row["Voce Variabile"]]+=1
             else:
-                output[firstLetter][row["Voce Variabile"]]=0
+                output[firstLetter][row["Voce Variabile"]]=1
         else:
-            output[firstLetter] = {"totali": 1, row["Voce Variabile"]: 1}
+            output[firstLetter] = {"Totali": 1, row["Voce Variabile"]: 1}
+
+        rng = next((chiave for chiave, iniziali in alphabet.items() if firstLetter in iniziali), None)
+
+        if rng in output_intervalli:
+            if "Totali" in output_intervalli[rng]:
+                output_intervalli[rng]["Totali"]+=1
+            else:
+                output_intervalli[rng]["Totali"]=1
+            if row["Voce Variabile"] in output_intervalli[rng]:
+                output_intervalli[rng][row["Voce Variabile"]]+=1
+            else:
+                output_intervalli[rng][row["Voce Variabile"]]=1
+        else:
+            output_intervalli[rng] = {"Totali": 1, row["Voce Variabile"]: 1}
+
+
         
     
     print(output)
 
     # Dizionario per la somma degli intervalli
-    output_intervalli = {}
 
-    # Itera sugli intervalli di iniziali
-    for intervallo, iniziali in alphabet.items():
-        output_intervalli[intervallo] = {"totali": 0}
-        
-        # Itera sul dizionario aggregato e somma i valori per le iniziali nell'intervallo corrente
-        for chiave_aggregata, valori_aggregati in output.items():
-            if any(iniziale in iniziali for iniziale in chiave_aggregata.split('-')):
-                for chiave, valore in valori_aggregati.items():
-                        output_intervalli[intervallo].setdefault(chiave, 0)
-                        output_intervalli[intervallo][chiave] += valore
 
+    
     with open(fileDestinazioneOutput+'.json', 'w') as json_file:
         json.dump(output, json_file, indent=2)
 
